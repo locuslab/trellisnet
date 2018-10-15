@@ -1,0 +1,9 @@
+*.pyc
+DS_Store/
+*.log
+*.pt
+.idea/
+*.aux
+*.data
+data/
+*.corpus
