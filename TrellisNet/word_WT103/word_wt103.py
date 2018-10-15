@@ -64,8 +64,8 @@ parser.add_argument('--wnorm', action='store_false',
                     help='use weight normalization (default: True)')
 parser.add_argument('--temporalwdrop', action='store_false',
                     help='only drop the temporal weights (default: True)')
-parser.add_argument('--optim', type=str, default='SGD',
-                    help='optimizer to use')
+parser.add_argument('--optim', type=str, default='Adam',
+                    help='optimizer to use (default: Adam)')
 parser.add_argument('--repack', action='store_false',
                     help='use repackaging (default: True)')
 parser.add_argument('--aux', type=float, default=0.1,
