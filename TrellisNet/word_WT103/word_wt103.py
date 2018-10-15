@@ -272,7 +272,8 @@ def train(epoch):
         data = data.t()
         net = nn.DataParallel(model) if data.size(0) > 10 else model
         (raw_output, _, output), hidden, all_outputs = net(data, hidden, decode=False)
-
+        raw_output = raw_output.transpose(0, 1)
+        output = output.transpose(0, 1)
         targets = targets[eff_history:].contiguous().view(-1)
         final_output = output[eff_history:].contiguous().view(-1, output.size(2))
         dec_weight, dec_bias = model.decoder.weight, model.decoder.bias

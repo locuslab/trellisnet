@@ -128,7 +128,7 @@ class TrellisNetModel(nn.Module):
             self.decoder.weight = self.encoder.weight
 
         if n_experts > 0:
-            print("\nUsing Mixture of Softmax, {0} experts with dropoutl: {0}\n".format(n_experts, dropoutl))
+            print("Applied Mixture of Softmax")
             self.mixsoft = MixSoftmax(n_experts, ntoken, nlasthid=nout, ninp=ninp, decoder=self.decoder,
                                       dropoutl=dropoutl)
             self.network.append(self.mixsoft)
