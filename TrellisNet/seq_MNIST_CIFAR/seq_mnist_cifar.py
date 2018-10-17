@@ -23,7 +23,7 @@ parser.add_argument('--epochs', type=int, default=200,
 parser.add_argument('--batch_size', type=int, default=64, metavar='N',
                     help='batch size')
 
-parser.add_argument('--nlevels', type=int, default=10,
+parser.add_argument('--nlevels', type=int, default=11,
                     help='steps unrolled')
 parser.add_argument('--dropout', type=float, default=0.1,
                     help='output locked dropout (0 = no dropout)')
@@ -57,8 +57,8 @@ parser.add_argument('--when', nargs='+', type=int, default=[50, 75, 90],
                     help='When to decay the learning rate')
 parser.add_argument('--ksize', type=int, default=2,
                     help='conv kernel size (default: 2)')
-parser.add_argument('--dilation', nargs='+', type=int, default=[1, 2, 4, 8, 16, 32, 64, 128, 256, 512],
-                    help='dilation rate (default: [1,2,4,8,16,32,64,128,256,512])')
+parser.add_argument('--dilation', nargs='+', type=int, default=[1, 1, 2, 4, 8, 16, 32, 64, 128, 256, 512],
+                    help='dilation rate (default: [1,1,2,4,8,16,32,64,128,256,512])')
 parser.add_argument('--load', type=str, default='',
                     help='path to load the model')
 parser.add_argument('--permute', action='store_false',
