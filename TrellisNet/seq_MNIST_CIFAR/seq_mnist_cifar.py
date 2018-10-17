@@ -57,7 +57,7 @@ parser.add_argument('--when', nargs='+', type=int, default=[50, 75, 90],
                     help='When to decay the learning rate')
 parser.add_argument('--ksize', type=int, default=2,
                     help='conv kernel size (default: 2)')
-parser.add_argument('--dilation', nargs='+', type=int, default=[1, 1, 2, 4, 8, 16, 32, 64, 128, 256, 512],
+parser.add_argument('--dilation', nargs='+', type=int, default=[1, 2, 4, 8, 16, 32, 64, 128, 256, 512],
                     help='dilation rate (default: [1,2,4,8,16,32,64,128,256,512])')
 parser.add_argument('--load', type=str, default='',
                     help='path to load the model')
@@ -133,9 +133,9 @@ if len(args.load) > 0:
     print("Loaded model\n")
     model = torch.load(args.load)
 else:
-    model = TrellisNetModel(ninp=args.emsize,
+    model = TrellisNetModel(ninp=input_channels,
                             nhid=args.nhid,
-                            nout=args.nout,
+                            nout=n_classes,
                             nlevels=args.nlevels,
                             kernel_size=args.ksize,
                             dilation=args.dilation,
@@ -180,7 +180,7 @@ def train(epoch):
         loss = F.nll_loss(output, target)
         loss.backward()
         if args.clip > 0:
-            torch.nn.utils.clip_grad_norm(model.parameters(), args.clip)
+            torch.nn.utils.clip_grad_norm_(model.parameters(), args.clip)
         optimizer.step()
         train_loss += loss
         steps += seq_length
