@@ -12,7 +12,7 @@ parser = argparse.ArgumentParser(description='PyTorch TrellisNet Sequence Model 
 parser.add_argument('--name', type=str, default='Trellis_seqMNIST_CIFAR',
                     help='name of the process')
 
-parser.add_argument('--nhid', type=int, default=128,
+parser.add_argument('--nhid', type=int, default=120,
                     help='number of hidden units per layer')
 parser.add_argument('--lr', type=float, default=4e-3,
                     help='initial learning rate (default: 4e-3)')
@@ -41,8 +41,8 @@ parser.add_argument('--anneal', type=int, default=10,
                     help='learning rate annealing criteria (default: 10)')
 parser.add_argument('--cuda', action='store_false',
                     help='use CUDA')
-parser.add_argument('--wnorm', action='store_true',
-                    help='use weight normalization (default: False)')
+parser.add_argument('--wnorm', action='store_false',
+                    help='use weight normalization (default: True)')
 parser.add_argument('--temporalwdrop', action='store_false',
                     help='only drop the temporal weights (default: True)')
 parser.add_argument('--optim', type=str, default='Adam',

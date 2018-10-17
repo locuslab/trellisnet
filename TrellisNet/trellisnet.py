@@ -96,7 +96,8 @@ class TrellisNet(nn.Module):
             print("Weight normalization applied")
             self.full_conv, self.fn = weight_norm(
                 WeightShareConv1d(ninp, h_size, 4 * h_size, kernel_size=kernel_size, dropouth=dropouth),
-                names=['weight1', 'weight2'])           # The weights to be normalized
+                names=['weight1', 'weight2'],
+                dim=0)           # The weights to be normalized
         else:
             self.full_conv = WeightShareConv1d(ninp, h_size, 4 * h_size, kernel_size=ker, dropouth=dropouth)
         self.net.append(self.full_conv)
@@ -156,7 +157,7 @@ class TrellisNet(nn.Module):
         # Feed-forward layers
         for i in range(0, self.nlevels):
             d = dilation_cycle[i % len(dilation_cycle)]
-            Z = self.step(Z, dilation=d, hc=hc,)
+            Z = self.step(Z, dilation=d, hc=hc)
             if aux and i % self.aux_frequency == (self.aux_frequency-1):
                 aux_outs.append(Z[:, -nout:].unsqueeze(0))
 
