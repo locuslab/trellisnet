@@ -35,9 +35,9 @@ parser.add_argument('--batch_size', type=int, default=16, metavar='N',
                     help='batch size')
 
 # For most of the time, you should change these two together
-parser.add_argument('--nlevels', type=int, default=55,
+parser.add_argument('--nlevels', type=int, default=60,
                     help='levels of the network')
-parser.add_argument('--horizon', type=int, default=55,
+parser.add_argument('--horizon', type=int, default=60,
                     help='The effective history size')
 
 parser.add_argument('--dropout', type=float, default=0.45,
@@ -48,11 +48,11 @@ parser.add_argument('--wdrop', type=float, default=0.5,
                     help='dropout applied to weights (0 = no dropout)')
 parser.add_argument('--emb_dropout', type=float, default=0.1,
                     help='dropout applied to embedding layer (0 = no dropout)')
-parser.add_argument('--dropouth', type=float, default=0.3,
+parser.add_argument('--dropouth', type=float, default=0.28,
                     help='dropout applied to hidden layers (0 = no dropout)')
 parser.add_argument('--dropoutl', type=float, default=0.29,
                     help='dropout applied to latent layer in MoS (0 = no dropout)')
-parser.add_argument('--wdecay', type=float, default=1e-6,
+parser.add_argument('--wdecay', type=float, default=1.2e-6,
                     help='weight decay')
 parser.add_argument('--tied', action='store_false',
                     help='tie the word embedding and softmax weights (default: True)')
@@ -124,8 +124,8 @@ else:
     corpus = data.Corpus(args.data)
     torch.save(corpus, fn)
 
-eval_batch_size = 16
-test_batch_size = 16
+eval_batch_size = 12
+test_batch_size = 12
 train_data = batchify(corpus.train, args.batch_size)
 val_data = batchify(corpus.valid, eval_batch_size)
 test_data = batchify(corpus.test, test_batch_size)
@@ -306,7 +306,7 @@ def train(epoch):
         loss = raw_loss + aux_losses + alpha_loss + beta_loss
         loss.backward()
 
-        torch.nn.utils.clip_grad_norm(model.parameters(), args.clip)
+        torch.nn.utils.clip_grad_norm_(model.parameters(), args.clip)
         optimizer.step()
 
         total_loss += raw_loss.data

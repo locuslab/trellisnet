@@ -2,7 +2,7 @@
 
 
 
-This repository contains the experiments done in paper [Trellis Networks for Sequence Modeling](https://arxiv.org/abs/XXXX.XXXXX) by Shaojie Bai, J. Zico Kolter and Vladlen Koltun.
+This repository contains the experiments done in paper [Trellis Networks for Sequence Modeling](https://arxiv.org/abs/1810.06682) by Shaojie Bai, J. Zico Kolter and Vladlen Koltun.
 
 
 
@@ -15,7 +15,7 @@ Our experiments were done in PyTorch. If you find our work, or this repository h
 @article{BaiTrellis2018,
 	author    = {Shaojie Bai and J. Zico Kolter and Vladlen Koltun},
 	title     = {Trellis Networks for Sequence Modeling},
-	journal   = {arXiv:XXXX.XXXXX},
+	journal   = {arXiv:1810.06682},
 	year      = {2018},
 }
 ```
@@ -43,9 +43,11 @@ All tasks share the same underlying TrellisNet model, which is in file `trellisn
 ```
 [TASK_NAME] /
     data/
+    logs/
     [TASK_NAME].py
     model.py
     utils.py
+    data.py
 ```
 
 where `[TASK_NAME].py` is the training script for the task (with argument flags; use `-h` to see the details).

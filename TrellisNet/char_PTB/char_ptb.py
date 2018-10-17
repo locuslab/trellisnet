@@ -70,8 +70,8 @@ parser.add_argument('--repack', action='store_false',
                     help='use repackaging (default: True)')
 parser.add_argument('--aux', type=float, default=0.3,
                     help='use auxiliary loss (default: 0.3), -1 means no auxiliary loss used')
-parser.add_argument('--aux_freq', type=float, default=75,
-                    help='auxiliary loss frequency (default: 75)')
+parser.add_argument('--aux_freq', type=float, default=80,
+                    help='auxiliary loss frequency (default: 80)')
 parser.add_argument('--seq_len', type=int, default=0,
                     help='total sequence length; if this is 0 then it defaults to args.horizon (default: 0)')
 parser.add_argument('--log-interval', type=int, default=100, metavar='N',
@@ -108,8 +108,8 @@ if torch.cuda.is_available():
 file, file_len, valfile, valfile_len, testfile, testfile_len, corpus = data_generator(args)
 
 ntokens = len(corpus.dictionary)
-eval_batch_size = 1
-test_batch_size = 1
+eval_batch_size = 10
+test_batch_size = 10
 train_data = batchify(char_tensor(corpus, file), args.batch_size, args)
 val_data = batchify(char_tensor(corpus, valfile), eval_batch_size, args)
 test_data = batchify(char_tensor(corpus, testfile), eval_batch_size, args)
@@ -271,7 +271,7 @@ def train(epoch):
         loss.backward()
 
         if args.clip > 0:
-            torch.nn.utils.clip_grad_norm(model.parameters(), args.clip)
+            torch.nn.utils.clip_grad_norm_(model.parameters(), args.clip)
         optimizer.step()
 
         total_loss += raw_loss.data

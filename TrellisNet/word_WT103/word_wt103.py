@@ -21,7 +21,7 @@ parser.add_argument('--name', type=str, default='Trellis_wordWT103',
                     help='name of the process')
 parser.add_argument('--emsize', type=int, default=512,
                     help='size of word embeddings')
-parser.add_argument('--nhid', type=int, default=1500,
+parser.add_argument('--nhid', type=int, default=1600,
                     help='number of hidden units per layer')
 parser.add_argument('--nout', type=int, default=512,
                     help='number of output units')
@@ -31,13 +31,13 @@ parser.add_argument('--clip', type=float, default=0.07,
                     help='gradient clipping (default: 0.07)')
 parser.add_argument('--epochs', type=int, default=25,
                     help='upper epoch limit (default: 25)')
-parser.add_argument('--batch_size', type=int, default=48, metavar='N',
-                    help='batch size')
+parser.add_argument('--batch_size', type=int, default=40, metavar='N',
+                    help='batch size (default: 40)')
 
 # For most of the time, you should change these two together
-parser.add_argument('--nlevels', type=int, default=70,
+parser.add_argument('--nlevels', type=int, default=75,
                     help='levels of the network')
-parser.add_argument('--horizon', type=int, default=70,
+parser.add_argument('--horizon', type=int, default=75,
                     help='The effective history size')
 
 parser.add_argument('--dropout', type=float, default=0.1,
@@ -293,7 +293,7 @@ def train(epoch):
         loss = raw_loss + aux_losses
         loss.backward()
 
-        torch.nn.utils.clip_grad_norm(params, args.clip)
+        torch.nn.utils.clip_grad_norm_(params, args.clip)
         optimizer.step()
 
         total_loss += raw_loss.data
