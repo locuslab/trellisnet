@@ -126,12 +126,12 @@ class TrellisNet(nn.Module):
         ct_1 = F.pad(self.ct, (dilation, 0))[:, :, :-dilation]  # Dimension (N, h_size, L)
         ct_1[:, :, :dilation] = cell.repeat(1, 1, dilation)
 
-        it = F.sigmoid(out[:, :h_size])
-        ot = F.sigmoid(out[:, h_size: 2 * h_size])
-        gt = F.tanh(out[:, 2 * h_size: 3 * h_size])
-        ft = F.sigmoid(out[:, 3 * h_size: 4 * h_size])
+        it = torch.sigmoid(out[:, :h_size])
+        ot = torch.sigmoid(out[:, h_size: 2 * h_size])
+        gt = torch.tanh(out[:, 2 * h_size: 3 * h_size])
+        ft = torch.sigmoid(out[:, 3 * h_size: 4 * h_size])
         ct = ft * ct_1 + it * gt
-        ht = ot * F.tanh(ct)
+        ht = ot * torch.tanh(ct)
 
         # Put everything back to form Z (i.e., injecting input to hidden unit)
         Z = torch.cat([Z[:, :ninp], ht], dim=1)

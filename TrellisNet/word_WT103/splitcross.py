@@ -191,7 +191,7 @@ if __name__ == '__main__':
         x = torch.autograd.Variable((torch.rand(N, 1) * 0.999 * V).int().long())
         y = embed(prev).squeeze()
         c = crit(embed.weight, bias, y, x.view(N))
-        print('Crit', c.exp().data[0])
+        print('Crit', c.exp().data.item())
 
         logprobs = crit.logprob(embed.weight, bias, y[:2]).exp()
         print(logprobs)
