@@ -1,7 +1,6 @@
 import torch
 from torch import nn
 import torch.nn.functional as F
-from torch.autograd import Variable
 from optimizations import weight_norm, VariationalDropout, VariationalHidDropout
 
 __author__ = 'shaojieb'
@@ -110,8 +109,8 @@ class TrellisNet(nn.Module):
         seq_len = X.size(2)
         h_size = self.h_size
 
-        self.ht = Variable(torch.zeros(batch_size, h_size, seq_len)).cuda()
-        self.ct = Variable(torch.zeros(batch_size, h_size, seq_len)).cuda()
+        self.ht = torch.zeros(batch_size, h_size, seq_len).cuda()
+        self.ct = torch.zeros(batch_size, h_size, seq_len).cuda()
         return torch.cat([X] + [self.ht], dim=1)     # "Injecting" input sequence at layer 1
 
     def step(self, Z, dilation=1, hc=None):

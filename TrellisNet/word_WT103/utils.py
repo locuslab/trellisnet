@@ -1,5 +1,4 @@
 import torch
-from torch.autograd import Variable
 
 
 def batchify(data, bsz, cuda=True):
@@ -17,7 +16,7 @@ def count_parameters(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
 
-def repackage_hidden4(h):
+def repackage_hidden(h):
     """Wraps hidden states in new Tensors,
     to detach them from their history."""
     if isinstance(h, torch.Tensor):
@@ -26,20 +25,11 @@ def repackage_hidden4(h):
         return tuple(repackage_hidden(v) for v in h)
 
 
-def repackage_hidden(h):
-    """Wraps hidden states in new Variables, to detach them from their history."""
-    if torch.__version__ == '0.4.0':
-        return repackage_hidden4(h)
-
-    if type(h) == Variable:
-        return Variable(h.data)
-    else:
-        return tuple(repackage_hidden(v) for v in h)
-
-    
 def get_batch(source, i, seq_len, evaluation=False):
-    """Variable `source` has dimension (L, N)"""
+    """`source` has dimension (L, N)"""
     seq_len = min(seq_len, source.size(0) - 1 - i)
-    data = Variable(source[i:i + seq_len], volatile=evaluation)
-    target = Variable(source[i + 1:i + 1 + seq_len])  # CAUTION: This is un-flattened!
+    data = source[i:i + seq_len]
+    if (evaluation):
+        data.set_grad_enabled(False)
+    target = source[i + 1:i + 1 + seq_len]  # CAUTION: This is un-flattened!
     return data, target

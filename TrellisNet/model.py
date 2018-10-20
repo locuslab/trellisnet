@@ -1,5 +1,4 @@
 import torch.nn as nn
-from torch.autograd import Variable
 import torch.nn.functional as F
 import torch
 
@@ -175,5 +174,5 @@ class TrellisNetModel(nn.Module):
     def init_hidden(self, bsz):
         h_size = self.nhid + self.nout
         weight = next(self.parameters()).data
-        return (Variable(weight.new(bsz, h_size, 1).zero_()),
-                Variable(weight.new(bsz, h_size, 1).zero_()))
+        return (weight.new(bsz, h_size, 1).zero_(),
+                weight.new(bsz, h_size, 1).zero_())

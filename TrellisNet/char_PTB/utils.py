@@ -1,6 +1,5 @@
 import unidecode
 import torch
-from torch.autograd import Variable
 from collections import Counter
 import observations
 import os
@@ -63,12 +62,10 @@ def count_parameters(model):
 
 
 def repackage_hidden(h):
-    """Wraps hidden states in new Variables, to detach them from their history."""
-    if torch.__version__ == '0.4.0':
-        return repackage_hidden4(h)
-
-    if type(h) == Variable:
-        return Variable(h.data)
+    """Wraps hidden states in new Tensors,
+    to detach them from their history."""
+    if isinstance(h, torch.Tensor):
+        return h.detach()
     else:
         return tuple(repackage_hidden(v) for v in h)
 
@@ -86,10 +83,12 @@ def batchify(data, batch_size, args):
     return data
 
 def get_batch(source, i, seq_len, evaluation=False):
-    """Variable `source` has dimension (L, N)"""
+    """`source` has dimension (L, N)"""
     seq_len = min(seq_len, source.size(0) - 1 - i)
-    data = Variable(source[i:i + seq_len], volatile=evaluation)
-    target = Variable(source[i + 1:i + 1 + seq_len])  # CAUTION: This is un-flattened!
+    data = source[i:i + seq_len]
+    if evaluation:
+        data.set_grad_enabled(False)
+    target = source[i + 1:i + 1 + seq_len]  # CAUTION: This is un-flattened!
     return data, target
 
 
