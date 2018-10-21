@@ -161,7 +161,7 @@ class VariationalHidDropout(nn.Module):
     def forward(self, x):
         if not self.training or self.dropout == 0:
             return x
-        assert(self.mask is not None, "You need to reset mask before using LockedDropoutHidLayer")
+        assert self.mask is not None, "You need to reset mask before using LockedDropoutHidLayer"
         mask = self.mask.expand_as(x)  # Make sure the dimension matches
         return mask * x
 
