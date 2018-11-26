@@ -28,7 +28,7 @@ def repackage_hidden4(h):
 
 def repackage_hidden(h):
     """Wraps hidden states in new Variables, to detach them from their history."""
-    if torch.__version__ == '0.4.0':
+    if '0.3' not in torch.__version__:
         return repackage_hidden4(h)
 
     if type(h) == Variable:

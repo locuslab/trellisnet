@@ -7,3 +7,4 @@ DS_Store/
 *.data
 data/
 *.corpus
+weights/

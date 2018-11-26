@@ -86,6 +86,8 @@ parser.add_argument('--n_experts', type=int, default=0,
                     help='number of softmax experts (default: 0)')
 parser.add_argument('--load', type=str, default='',
                     help='path to load the model')
+parser.add_argument('--load_weight', type=str, default='',
+                    help='path to load the model weights (please only use --load or --load_weight)')
 
 args = parser.parse_args()
 args.save = args.name + ".pt"
@@ -161,7 +163,8 @@ else:
                             repack=args.repack,
                             wnorm=args.wnorm,
                             aux=(args.aux > 0),
-                            aux_frequency=args.aux_freq)
+                            aux_frequency=args.aux_freq,
+                            load=args.load_weight)
 if args.cuda:
     model.cuda()
 
@@ -341,6 +344,11 @@ except KeyboardInterrupt:
     print("Saving before quit...")
     save(model, args)
 
+# Load the best saved model
+with open(args.save, 'rb') as f:
+    model = torch.load(f)
+    model.save_weights('weights/pretrained_charptb.pkl')
+    
 # Run on test data
 test_loss = evaluate(test_data)
 print('=' * 89)

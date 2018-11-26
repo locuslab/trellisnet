@@ -2,6 +2,7 @@ import torch.nn as nn
 from torch.autograd import Variable
 import torch.nn.functional as F
 import torch
+import pickle
 
 from trellisnet import TrellisNet
 from optimizations import WeightDrop, embedded_dropout, VariationalDropout
@@ -64,7 +65,8 @@ class MixSoftmax(nn.Module):
 class TrellisNetModel(nn.Module):
     def __init__(self, ntoken, ninp, nhid, nout, nlevels, kernel_size=2, dilation=[1],
                  dropout=0.0, dropouti=0.0, dropouth=0.0, dropoutl=0.0, emb_dropout=0.0, wdrop=0.0,
-                 temporalwdrop=True, tie_weights=True, repack=False, wnorm=True, aux=True, aux_frequency=20, n_experts=0):
+                 temporalwdrop=True, tie_weights=True, repack=False, wnorm=True, aux=True, aux_frequency=20, n_experts=0,
+                 load=""):
         """
         A deep sequence model based on TrellisNet
 
@@ -90,6 +92,7 @@ class TrellisNetModel(nn.Module):
         :param aux: Whether to use auxiliary loss (deep supervision)
         :param aux_frequency: The frequency of the auxiliary loss (only valid if aux == True)
         :param n_experts: The number of softmax "experts" (i.e., whether MoS is used)
+        :param load: The path to the pickled weight file (the weights/biases should be in numpy format)
         """
         super(TrellisNetModel, self).__init__()
         self.emb_dropout = emb_dropout
@@ -97,47 +100,66 @@ class TrellisNetModel(nn.Module):
         self.dropouti = dropouti  # Rate for dropping embedding output
         self.dropoutl = dropoutl
         self.var_drop = VariationalDropout()
-
-        self.encoder = nn.Embedding(ntoken, ninp)
+        
         self.repack = repack
         self.nout = nout
         self.nhid = nhid
         self.ninp = ninp
         self.aux = aux
         self.n_experts = n_experts
-
-        network = TrellisNet
-        self.network = network(ninp, nhid, nout=nout, nlevels=nlevels, kernel_size=kernel_size,
-                               dropouth=dropouth, wnorm=wnorm, aux_frequency=aux_frequency, dilation=dilation)
-
-        # If weight normalization is used, we apply the weight dropout to its "direction", instead of "scale"
-        reg_term = '_v' if wnorm else ''
-        self.network = WeightDrop(self.network,
-                                  [['full_conv', 'weight1' + reg_term],
-                                   ['full_conv', 'weight2' + reg_term]],
-                                  dropout=wdrop,
-                                  temporal=temporalwdrop)
-
+        self.tie_weights = tie_weights
+        self.wnorm = wnorm
+        
+        # 1) Set up encoder and decoder (embeddings)
+        self.encoder = nn.Embedding(ntoken, ninp)
         self.decoder = nn.Linear(nhid, ntoken)
-        self.network = nn.ModuleList([self.network])
         self.init_weights()
-
         if tie_weights:
             if nout != ninp and self.n_experts == 0:
                 raise ValueError('When using the tied flag, nhid must be equal to emsize')
             self.decoder.weight = self.encoder.weight
 
+        # 2) Set up TrellisNet
+        tnet = TrellisNet
+        self.tnet = tnet(ninp, nhid, nout=nout, nlevels=nlevels, kernel_size=kernel_size,
+                         dropouth=dropouth, wnorm=wnorm, aux_frequency=aux_frequency, dilation=dilation)
+        
+        # 3) Set up MoS, if needed
         if n_experts > 0:
             print("Applied Mixture of Softmax")
             self.mixsoft = MixSoftmax(n_experts, ntoken, nlasthid=nout, ninp=ninp, decoder=self.decoder,
                                       dropoutl=dropoutl)
-            self.network.append(self.mixsoft)
+            
+        # 4) Apply weight drop connect. If weightnorm is used, we apply the dropout to its "direction", instead of "scale"
+        reg_term = '_v' if wnorm else ''
+        self.tnet = WeightDrop(self.tnet,
+                               [['full_conv', 'weight1' + reg_term],
+                                ['full_conv', 'weight2' + reg_term]],
+                                dropout=wdrop,
+                                temporal=temporalwdrop)
+        self.network = nn.ModuleList([self.tnet])
+        if n_experts > 0: self.network.append(self.mixsoft)
+            
+            
+        # 5) Load model, if path specified
+        if len(load) > 0:
+            params_dict = pickle.load(open(load, 'rb'))
+            self.load_weights(params_dict)
+            print("Model loaded successfully from {0}".format(load))
 
     def init_weights(self):
         initrange = 0.1
         self.encoder.weight.data.uniform_(-initrange, initrange)
         self.decoder.bias.data.fill_(0)
         self.decoder.weight.data.uniform_(-initrange, initrange)
+        
+    def load_weights(self, params_dict):
+        self.load_state_dict(params_dict)
+   
+    def save_weights(self, name):
+        with open(name, 'wb') as f:
+            d = self.state_dict()
+            pickle.dump(d, f)
 
     def forward(self, input, hidden, decode=True):
         """

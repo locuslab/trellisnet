@@ -86,7 +86,6 @@ class TrellisNet(nn.Module):
         self.dilation = dilation
         self.nlevels = nlevels
         self.fn = None
-        self.net = []
         self.last_output = None
         self.aux_frequency = aux_frequency
 
@@ -100,9 +99,6 @@ class TrellisNet(nn.Module):
                 dim=0)           # The weights to be normalized
         else:
             self.full_conv = WeightShareConv1d(ninp, h_size, 4 * h_size, kernel_size=ker, dropouth=dropouth)
-        self.net.append(self.full_conv)
-
-        self.net = nn.ModuleList(self.net)
 
     def transform_input(self, X):
         # X has dimension (N, ninp, L)
@@ -120,7 +116,7 @@ class TrellisNet(nn.Module):
         (hid, cell) = hc
 
         # Apply convolution
-        out = self.net[0](Z, dilation=dilation, hid=hid)
+        out = self.full_conv(Z, dilation=dilation, hid=hid)
 
         # Gated activations among channel groups
         ct_1 = F.pad(self.ct, (dilation, 0))[:, :, :-dilation]  # Dimension (N, h_size, L)
