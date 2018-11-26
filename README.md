@@ -42,7 +42,7 @@ We provide some reasonably good pre-trained weights here so that the users don't
 | ------------- | ----------------- | ------------------- | ------------------------------------------------------------ |
 | TrellisNet-LM | Language Modeling | Penn Treebank (PTB) | [download (.pkl)](https://drive.google.com/file/d/1LZugAxuDUoYaybYLxVtSc8JMEOeNTxoL/view?usp=sharing) |
 
-
+To use the pre-trained weights, use the flag `--load_weight [.pkl PATH]` when starting the training script.
 
 ## Usage
 
