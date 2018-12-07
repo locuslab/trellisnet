@@ -35,9 +35,9 @@ parser.add_argument('--batch_size', type=int, default=16, metavar='N',
                     help='batch size')
 
 # For most of the time, you should change these two together
-parser.add_argument('--nlevels', type=int, default=60,
+parser.add_argument('--nlevels', type=int, default=58,
                     help='levels of the network')
-parser.add_argument('--horizon', type=int, default=60,
+parser.add_argument('--horizon', type=int, default=58,
                     help='The effective history size')
 
 parser.add_argument('--dropout', type=float, default=0.45,
@@ -94,6 +94,8 @@ parser.add_argument('--n_experts', type=int, default=0,
                     help='number of softmax experts (default: 0)')
 parser.add_argument('--load', type=str, default='',
                     help='path to load the model')
+parser.add_argument('--load_weight', type=str, default='',
+                    help='path to load the model weights (please only use --load or --load_weight)')
 
 args = parser.parse_args()
 args.save = args.name + ".pt"
@@ -179,7 +181,8 @@ else:
                             wnorm=args.wnorm,
                             aux=(args.aux > 0),
                             aux_frequency=args.aux_freq,
-                            n_experts=args.n_experts)
+                            n_experts=args.n_experts,
+                            load=args.load_weight)
 
 if args.cuda:
     model.cuda()
@@ -374,6 +377,7 @@ try:
             if not best_val_loss or val_loss < best_val_loss:
                 with open(args.save, 'wb') as f:
                     torch.save(model, f)
+                    # model.save_weights('weights/pretrained.pkl')
                     print('ASGD Saving model (new best validation) in ' + args.save)
                 best_val_loss = val_loss
             for prm in model.parameters():
@@ -386,6 +390,7 @@ try:
             if not best_val_loss or val_loss < best_val_loss:
                 with open(args.save, 'wb') as f:
                     torch.save(model, f)
+                    # model.save_weights('weights/pretrained.pkl')
                     print('Saving model (new best validation) in ' + args.save)
                 best_val_loss = val_loss
 
@@ -418,6 +423,8 @@ except KeyboardInterrupt:
 # Load the best saved model
 with open(args.save, 'rb') as f:
     model = torch.load(f)
+    print("Saving the pre-trained weights of the best saved model")
+    model.save_weights('weights/pretrained_wordptb.pkl')
 
 # Run on test data
 test_loss = evaluate(test_data)

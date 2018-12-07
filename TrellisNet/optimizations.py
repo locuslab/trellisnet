@@ -94,7 +94,7 @@ def embedded_dropout(embed, words, dropout=0.1, scale=None):
         padding_idx = -1
 
     # Handle PyTorch issue
-    if torch.__version__ == '0.4.0':
+    if '0.3' not in torch.__version__:
         X = F.embedding(
             words, masked_embed_weight,
             padding_idx,

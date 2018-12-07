@@ -34,7 +34,15 @@ The code should be directly runnable with PyTorch 0.4.0 (although slight modific
 
 Note that these tasks are on very different scales, with unique properties that challenge sequence models in different ways. For example, word-level PTB is a small dataset that a typical model easily overfits, so judicious regularization is essential. WT103 is a hundred times larger, with less danger of overfitting, but with a vocabulary size of 268K that makes training more challenging (due to large embedding size).
 
+## Pre-trained Model(s)
 
+We provide some reasonably good pre-trained weights here so that the users don't need to train from scratch. We'll update the table from time to time. Note: 1) it could take a while to load the weights; 2) if you train from scratch using different seeds (which we didn't explore), it's likely you will get better results :-)
+
+| Description   | Task              | Dataset             | Model                                                        |
+| ------------- | ----------------- | ------------------- | ------------------------------------------------------------ |
+| TrellisNet-LM | Language Modeling | Penn Treebank (PTB) | [download (.pkl)](https://drive.google.com/file/d/1LZugAxuDUoYaybYLxVtSc8JMEOeNTxoL/view?usp=sharing) |
+
+To use the pre-trained weights, use the flag `--load_weight [.pkl PATH]` when starting the training script.
 
 ## Usage
 
