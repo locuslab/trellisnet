@@ -1,5 +1,4 @@
 import torch
-from torch.autograd import Variable
 import torch.optim as optim
 import torch.nn.functional as F
 from model import TrellisNetModel
@@ -174,7 +173,6 @@ def train(epoch):
 
         hidden = model.init_hidden(data.size(0))
 
-        data, target = Variable(data), Variable(target)
         optimizer.zero_grad()
         output, hidden = model(data, hidden)
         loss = F.nll_loss(output, target)
@@ -187,7 +185,7 @@ def train(epoch):
         if batch_idx > 0 and batch_idx % args.log_interval == 0:
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tlr: {:.6f}\tLoss: {:.6f}\tSteps: {}'.format(
                    epoch, batch_idx * batch_size, len(train_loader.dataset),
-                   100. * batch_idx / len(train_loader), lr, train_loss.data[0] / args.log_interval, steps))
+                   100. * batch_idx / len(train_loader), lr, train_loss.data.item() / args.log_interval, steps))
             train_loss = 0
 
             sys.stdout.flush()
@@ -207,9 +205,8 @@ def test():
 
         hidden = model.init_hidden(data.size(0))
 
-        data, target = Variable(data, volatile=True), Variable(target)
         output, hidden = model(data, hidden)
-        test_loss += F.nll_loss(output, target, size_average=False).data[0]
+        test_loss += F.nll_loss(output, target, size_average=False).data.item()
         pred = output.data.max(1, keepdim=True)[1]
         correct += pred.eq(target.data.view_as(pred)).cpu().sum()
 

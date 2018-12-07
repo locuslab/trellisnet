@@ -2,7 +2,6 @@ from torch.nn.parameter import Parameter
 import torch.nn as nn
 import torch
 import torch.nn.functional as F
-from torch.autograd import Variable
 
 ##############################################################################################################
 #
@@ -83,7 +82,6 @@ def embedded_dropout(embed, words, dropout=0.1, scale=None):
     if dropout:
         mask = embed.weight.data.new().resize_((embed.weight.size(0), 1)).bernoulli_(1 - dropout).expand_as(
             embed.weight) / (1 - dropout)
-        mask = Variable(mask)
         masked_embed_weight = mask * embed.weight
     else:
         masked_embed_weight = embed.weight
@@ -134,8 +132,9 @@ class VariationalDropout(nn.Module):
         else:
             # Dimension (N, L, C)
             m = x.data.new(x.size(0), 1, x.size(2)).bernoulli_(1 - dropout)
-        mask = Variable(m, requires_grad=False) / (1 - dropout)
-        mask = mask.expand_as(x)
+        with torch.no_grad():
+            mask = m / (1 - dropout)
+            mask = mask.expand_as(x)
         return mask * x
 
 
@@ -154,14 +153,15 @@ class VariationalHidDropout(nn.Module):
 
         # Dimension (N, C, L)
         m = x.data.new(x.size(0), x.size(1), 1).bernoulli_(1 - dropout)
-        mask = Variable(m, requires_grad=False) / (1 - dropout)
-        self.mask = mask
+        with torch.no_grad():
+            mask = m / (1 - dropout)
+            self.mask = mask
         return mask
 
     def forward(self, x):
         if not self.training or self.dropout == 0:
             return x
-        assert(self.mask is not None, "You need to reset mask before using LockedDropoutHidLayer")
+        assert self.mask is not None, "You need to reset mask before using LockedDropoutHidLayer"
         mask = self.mask.expand_as(x)  # Make sure the dimension matches
         return mask * x
 
