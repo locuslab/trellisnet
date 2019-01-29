@@ -23,7 +23,7 @@ Our experiments were done in PyTorch. If you find our work, or this repository h
 
 ## Datasets
 
-The code should be directly runnable with PyTorch 0.4.0 (although slight modifications may be needed for other versions). This repository contains the training script for the following tasks:
+The code should be directly runnable with PyTorch 0.4.0 or above (e.g., v1.0.0). This repository contains the training script for the following tasks:
 
 - **Sequential MNIST** handwritten digit classification
 - **Permuted Sequential MNIST** that randomly permutes the pixel order in sequential MNIST
