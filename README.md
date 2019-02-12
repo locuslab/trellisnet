@@ -36,13 +36,14 @@ Note that these tasks are on very different scales, with unique properties that 
 
 ## Pre-trained Model(s)
 
-We provide some reasonably good pre-trained weights here so that the users don't need to train from scratch. We'll update the table from time to time. Note: 1) it could take a while to load the weights; 2) if you train from scratch using different seeds (which we didn't explore), it's likely you will get better results :-)
+We provide some reasonably good pre-trained weights here so that the users don't need to train from scratch. We'll update the table from time to time. (Note: if you train from scratch using different seeds, it's likely you will get better results :-))
 
 | Description   | Task              | Dataset             | Model                                                        |
 | ------------- | ----------------- | ------------------- | ------------------------------------------------------------ |
-| TrellisNet-LM | Language Modeling | Penn Treebank (PTB) | [download (.pkl)](https://drive.google.com/file/d/1LZugAxuDUoYaybYLxVtSc8JMEOeNTxoL/view?usp=sharing) |
+| TrellisNet-LM | Word-Level Language Modeling | Penn Treebank (PTB) | [download (.pkl)](https://drive.google.com/file/d/1LZugAxuDUoYaybYLxVtSc8JMEOeNTxoL/view?usp=sharing) |
+| TrellisNet-LM | Character-Level Language Modeling | Penn Treebank (PTB) | [download (.pkl)](https://drive.google.com/file/d/15gx7BwLLmheDNNC709u2VDDcEWtf7EDg/view?usp=sharing) |
 
-To use the pre-trained weights, use the flag `--load_weight [.pkl PATH]` when starting the training script.
+To use the pre-trained weights, use the flag `--load_weight [.pkl PATH]` when starting the training script (e.g., you can just use the default `arg` parameters).
 
 ## Usage
 
