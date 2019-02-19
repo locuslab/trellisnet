@@ -48,7 +48,7 @@ class WeightShareConv1d(nn.Module):
 
         # Hidden part
         z_1 = x[:, self.n_inp1:]
-        z_1[:, :, :padding].data = hid.repeat(1, 1, padding).data  # Note: we only pad the hidden part :-)
+        z_1[:, :, :padding] = hid.repeat(1, 1, padding)  # Note: we only pad the hidden part :-)
         device = x_1.get_device()
 
         # A linear transformation of the input sequence (and pre-computed once)
