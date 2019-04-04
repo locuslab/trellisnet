@@ -30,6 +30,6 @@ def get_batch(source, i, seq_len, evaluation=False):
     seq_len = min(seq_len, source.size(0) - 1 - i)
     data = source[i:i + seq_len]
     if evaluation:
-        data.set_grad_enabled(False)
+        data.requires_grad = False
     target = source[i + 1:i + 1 + seq_len]  # CAUTION: This is un-flattened!
     return data, target

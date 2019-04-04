@@ -200,48 +200,49 @@ optimizer = getattr(optim, args.optim)(params, lr=lr, weight_decay=args.wdecay)
 def evaluate(data_source):
     # Turn on evaluation mode which disables dropout.
     model.eval()
-    total_loss = 0
-    batch_size = data_source.size(1)
-    hidden = model.init_hidden(batch_size)
-    eff_history_mode = (args.seq_len > args.horizon and not args.repack)
+    with torch.no_grad():
+        total_loss = 0
+        batch_size = data_source.size(1)
+        hidden = model.init_hidden(batch_size)
+        eff_history_mode = (args.seq_len > args.horizon and not args.repack)
 
-    if eff_history_mode:
-        validseqlen = args.seq_len - args.horizon
-        seq_len = args.seq_len
-    else:
-        validseqlen = args.horizon
-        seq_len = args.horizon
-
-    processed_data_size = 0
-    for i in range(0, data_source.size(0) - 1, validseqlen):
-        eff_history = args.horizon if eff_history_mode else 0
-        if i + eff_history >= data_source.size(0) - 1: continue
-        data, targets = get_batch(data_source, i, seq_len, evaluation=True)
-
-        if args.repack:
-            hidden = repackage_hidden(hidden)
+        if eff_history_mode:
+            validseqlen = args.seq_len - args.horizon
+            seq_len = args.seq_len
         else:
-            hidden = model.init_hidden(data.size(1))
+            validseqlen = args.horizon
+            seq_len = args.horizon
 
-        data = data.t()
-        net = nn.DataParallel(model) if batch_size > 10 else model
-        (_, _, output), hidden, _ = net(data, hidden, decode=False)
-        output = output.transpose(0, 1)
-        targets = targets[eff_history:].contiguous().view(-1)
-        final_output = output[eff_history:].contiguous().view(-1, output.size(2))
+        processed_data_size = 0
+        for i in range(0, data_source.size(0) - 1, validseqlen):
+            eff_history = args.horizon if eff_history_mode else 0
+            if i + eff_history >= data_source.size(0) - 1: continue
+            data, targets = get_batch(data_source, i, seq_len, evaluation=True)
 
-        loss = criterion(model.decoder.weight, model.decoder.bias, final_output, targets)
-        loss = loss.data
+            if args.repack:
+                hidden = repackage_hidden(hidden)
+            else:
+                hidden = model.init_hidden(data.size(1))
 
-        total_loss += (data.size(1) - eff_history) * loss
-        processed_data_size += data.size(1) - eff_history
+            data = data.t()
+            net = nn.DataParallel(model) if batch_size > 10 else model
+            (_, _, output), hidden, _ = net(data, hidden, decode=False)
+            output = output.transpose(0, 1)
+            targets = targets[eff_history:].contiguous().view(-1)
+            final_output = output[eff_history:].contiguous().view(-1, output.size(2))
 
-    data = None
-    output = None
-    targets = None
-    final_output = None
+            loss = criterion(model.decoder.weight, model.decoder.bias, final_output, targets)
+            loss = loss.data
 
-    return total_loss.item() / processed_data_size
+            total_loss += (data.size(1) - eff_history) * loss
+            processed_data_size += data.size(1) - eff_history
+
+        data = None
+        output = None
+        targets = None
+        final_output = None
+
+        return total_loss.item() / processed_data_size
 
 
 def train(epoch):
@@ -339,6 +340,11 @@ def inference(epoch, epoch_start_time):
     return val_loss, test_loss
 
 
+if args.eval:
+    print("Eval only mode")
+    inference(-1, time.time())
+    sys.exit(0)
+    
 # Loop over epochs
 lr = args.lr
 best_val_loss = None

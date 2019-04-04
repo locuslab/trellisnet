@@ -142,7 +142,7 @@ class TrellisNetModel(nn.Module):
             
         # 5) Load model, if path specified
         if len(load) > 0:
-            params_dict = pickle.load(open(load, 'rb'))
+            params_dict = torch.load(open(load, 'rb'))
             self.load_weights(params_dict)
             print("Model loaded successfully from {0}".format(load))
 
@@ -158,7 +158,7 @@ class TrellisNetModel(nn.Module):
     def save_weights(self, name):
         with open(name, 'wb') as f:
             d = self.state_dict()
-            pickle.dump(d, f)
+            torch.save(d, f)
 
     def forward(self, input, hidden, decode=True):
         """
@@ -174,7 +174,7 @@ class TrellisNetModel(nn.Module):
         emb = emb.transpose(1, 2)
 
         trellisnet = self.network[0]
-        raw_output, hidden, all_raw_outputs = trellisnet(emb, hidden)
+        raw_output, hidden, all_raw_outputs = trellisnet(emb, hidden, aux=self.aux)
         output = self.var_drop(raw_output, self.dropout)
         all_outputs = self.var_drop(all_raw_outputs, self.dropout, dim=4) if self.aux else None  # N x M x L x C
         decoded, all_decoded = None, None

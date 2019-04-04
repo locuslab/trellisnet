@@ -68,6 +68,8 @@ parser.add_argument('--optim', type=str, default='Adam',
                     help='optimizer to use (default: Adam)')
 parser.add_argument('--repack', action='store_false',
                     help='use repackaging (default: True)')
+parser.add_argument('--eval', action='store_true',
+                    help='evaluation only mode')
 parser.add_argument('--aux', type=float, default=0.3,
                     help='use auxiliary loss (default: 0.3), -1 means no auxiliary loss used')
 parser.add_argument('--aux_freq', type=float, default=80,
@@ -178,47 +180,48 @@ optimizer = getattr(optim, args.optim)(model.parameters(), lr=args.lr, weight_de
 
 def evaluate(data_source):
     model.eval()
-    total_loss = 0
-    hidden = model.init_hidden(eval_batch_size)
-    eff_history_mode = (args.seq_len > args.horizon and not args.repack)
+    with torch.no_grad():
+        total_loss = 0
+        hidden = model.init_hidden(eval_batch_size)
+        eff_history_mode = (args.seq_len > args.horizon and not args.repack)
 
-    if eff_history_mode:
-        validseqlen = args.seq_len - args.horizon
-        seq_len = args.seq_len
-    else:
-        validseqlen = args.horizon
-        seq_len = args.horizon
-
-    processed_data_size = 0
-    for i in range(0, data_source.size(0) - 1, validseqlen):
-        eff_history = args.horizon if eff_history_mode else 0
-        if i + eff_history >= data_source.size(0) - 1: continue
-        data, targets = get_batch(data_source, i, seq_len, evaluation=True)
-
-        if args.repack:
-            hidden = repackage_hidden(hidden)
+        if eff_history_mode:
+            validseqlen = args.seq_len - args.horizon
+            seq_len = args.seq_len
         else:
-            hidden = model.init_hidden(eval_batch_size)
+            validseqlen = args.horizon
+            seq_len = args.horizon
 
-        data = data.t()
-        net = nn.DataParallel(model) if data.size(0) > 10 else model
-        (_, _, decoded), hidden, all_decoded = net(data, hidden)
-        decoded = decoded.transpose(0, 1)
-        targets = targets[eff_history:].contiguous().view(-1)
-        final_decoded = decoded[eff_history:].contiguous().view(-1, ntokens)
+        processed_data_size = 0
+        for i in range(0, data_source.size(0) - 1, validseqlen):
+            eff_history = args.horizon if eff_history_mode else 0
+            if i + eff_history >= data_source.size(0) - 1: continue
+            data, targets = get_batch(data_source, i, seq_len, evaluation=True)
 
-        loss = criterion(final_decoded, targets)
-        loss = loss.data
+            if args.repack:
+                hidden = repackage_hidden(hidden)
+            else:
+                hidden = model.init_hidden(eval_batch_size)
 
-        total_loss += (data.size(1) - eff_history) * loss
-        processed_data_size += data.size(1) - eff_history
+            data = data.t()
+            net = nn.DataParallel(model) if data.size(0) > 10 else model
+            (_, _, decoded), hidden, all_decoded = net(data, hidden)
+            decoded = decoded.transpose(0, 1)
+            targets = targets[eff_history:].contiguous().view(-1)
+            final_decoded = decoded[eff_history:].contiguous().view(-1, ntokens)
 
-    decoded = None
-    final_decoded = None
-    targets = None
-    all_decoded = None   # This is for auxiliary losses; not used in evaluation
+            loss = criterion(final_decoded, targets)
+            loss = loss.data
 
-    return total_loss[0] / processed_data_size
+            total_loss += (data.size(1) - eff_history) * loss
+            processed_data_size += data.size(1) - eff_history
+
+        decoded = None
+        final_decoded = None
+        targets = None
+        all_decoded = None   # This is for auxiliary losses; not used in evaluation
+
+        return total_loss.item() / processed_data_size
 
 
 def train(epoch):
@@ -282,8 +285,8 @@ def train(epoch):
             total_aux_losses += aux_losses.data
 
         if batch % args.log_interval == 0 and batch > 0:
-            cur_loss = total_loss[0] / args.log_interval
-            cur_aux_loss = total_aux_losses[0] / args.log_interval if args.aux else 0
+            cur_loss = total_loss.item() / args.log_interval
+            cur_aux_loss = total_aux_losses.item() / args.log_interval if args.aux else 0
             elapsed = time.time() - start_time
             print('| epoch {:3d} | {:5d}/{:5d} batches | lr {:02.5f} | ms/batch {:5.2f} | '
                   'raw_loss {:5.3f} | aux_loss {:5.2f} | bpc {:5.3f}'.format(
@@ -313,6 +316,11 @@ def inference(epoch):
     return val_loss, test_loss
 
 
+if args.eval:
+    print("Eval only mode")
+    inference(-1)
+    sys.exit(0)
+    
 lr = args.lr
 best_val_loss = None
 all_val_losses = []

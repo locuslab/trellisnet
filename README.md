@@ -23,7 +23,7 @@ Our experiments were done in PyTorch. If you find our work, or this repository h
 
 ## Datasets
 
-The code should be directly runnable with PyTorch 0.4.0 or above (e.g., v1.0.0). This repository contains the training script for the following tasks:
+The code should be directly runnable with PyTorch 1.0.0 or above. This repository contains the training script for the following tasks:
 
 - **Sequential MNIST** handwritten digit classification
 - **Permuted Sequential MNIST** that randomly permutes the pixel order in sequential MNIST
@@ -43,7 +43,7 @@ We provide some reasonably good pre-trained weights here so that the users don't
 | TrellisNet-LM | Word-Level Language Modeling | Penn Treebank (PTB) | [download (.pkl)](https://drive.google.com/file/d/1LZugAxuDUoYaybYLxVtSc8JMEOeNTxoL/view?usp=sharing) |
 | TrellisNet-LM | Character-Level Language Modeling | Penn Treebank (PTB) | [download (.pkl)](https://drive.google.com/file/d/15gx7BwLLmheDNNC709u2VDDcEWtf7EDg/view?usp=sharing) |
 
-To use the pre-trained weights, use the flag `--load_weight [.pkl PATH]` when starting the training script (e.g., you can just use the default `arg` parameters).
+To use the pre-trained weights, use the flag `--load_weight [.pkl PATH]` when starting the training script (e.g., you can just use the default `arg` parameters). You can use the flag `--eval` turn on the evaluation mode only.
 
 ## Usage
 
